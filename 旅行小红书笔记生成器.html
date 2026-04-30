@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅行小红书笔记生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title .icon {
+            font-size: 24px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+            font-family: monospace;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .output-area {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .output-content {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 200px;
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .copy-btn {
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .type-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .type-btn {
+            padding: 10px 20px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .type-btn:hover {
+            border-color: #667eea;
+        }
+
+        .type-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .help-text {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #856404;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+        }
+
+        .emoji-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .emoji-item {
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+
+        .emoji-item:hover {
+            background: #f0f0f0;
+            transform: scale(1.2);
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .data-preview {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .data-row {
+            display: flex;
+            padding: 10px;
+            background: white;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        .data-cell {
+            flex: 1;
+            padding: 0 8px;
+            border-right: 1px solid #e0e0e0;
+        }
+
+        .data-cell:last-child {
+            border-right: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌏 旅行小红书笔记生成器</h1>
+            <p>从飞书表格复制数据 → 一键生成小红书爆款笔记</p>
+        </div>
+
+        <div class="content">
+            <!-- 标签页切换 -->
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('input')">📝 输入数据</div>
+                <div class="tab" onclick="switchTab('generate')">✨ 生成笔记</div>
+            </div>
+
+            <!-- 输入数据标签页 -->
+            <div id="tab-input" class="tab-content active">
+                <div class="help-text">
+                    <strong>💡 使用方法：</strong><br>
+                    1. 在飞书多维表格中选择数据，复制<br>
+                    2. 将数据粘贴到下方文本框<br>
+                    3. 点击"解析数据"按钮<br>
+                    4. 切换到"生成笔记"标签页选择笔记类型生成
+                </div>
+
+                <div class="section">
+                    <div class="section-title">
+                        <span class="icon">📋</span>
+                        粘贴飞书表格数据
+                    </div>
+                    <textarea id="inputData" placeholder="从飞书多维表格复制数据，粘贴到这里...
+
+示例格式（直接从飞书复制的表格）：
+日期    城市    类型    名称    费用    推荐指数    我的感受
+5月1日  釜山    景点    海云台海滩  0    ⭐⭐⭐⭐⭐    沙子很细，日落超美
+5月1日  釜山    美食    海鲜拉面    60    ⭐⭐⭐⭐    汤头鲜甜，分量大"></textarea>
+
+                    <div class="btn-group">
+                        <button class="btn-primary" onclick="parseData()">🔍 解析数据</button>
+                        <button class="btn-secondary" onclick="loadSample()">📝 加载示例数据</button>
+                        <button class="btn-secondary" onclick="clearData()">🗑️ 清空</button>
+                    </div>
+
+                    <div id="dataPreview" class="data-preview" style="display: none;">
+                        <div style="margin-bottom: 10px; font-weight: 600;">已解析的数据：</div>
+                        <div id="parsedDataList"></div>
+                    </div>
+                </div>
+
+                <!-- 旅行基本信息 -->
+                <div class="section">
+                    <div class="section-title">
+                        <span class="icon">ℹ️</span>
+                        旅行基本信息
+                    </div>
+                    <div class="grid-2">
+                        <div class="input-group">
+                            <label>旅行名称</label>
+                            <input type="text" id="tripName" placeholder="如：韩国釜山5日游">
+                        </div>
+                        <div class="input-group">
+                            <label>目的地</label>
+                            <input type="text" id="destination" placeholder="如：釜山">
+                        </div>
+                        <div class="input-group">
+                            <label>旅行天数</label>
+                            <input type="number" id="tripDays" placeholder="如：5">
+                        </div>
+                        <div class="input-group">
+                            <label>总花费</label>
+                            <input type="number" id="totalCost" placeholder="如：8000">
+                        </div>
+                        <div class="input-group">
+                            <label>出发地</label>
+                            <input type="text" id="departure" placeholder="如：上海">
+                        </div>
+                        <div class="input-group">
+                            <label>旅行性质</label>
+                            <select id="tripType">
+                                <option value="独行">独行</option>
+                                <option value="情侣">情侣</option>
+                                <option value="家庭">家庭</option>
+                                <option value="朋友">朋友</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 生成笔记标签页 -->
+            <div id="tab-generate" class="tab-content">
+                <div class="section">
+                    <div class="section-title">
+                        <span class="icon">📝</span>
+                        选择笔记类型
+                    </div>
+                    <div class="type-selector">
+                        <button class="type-btn active" onclick="selectType('comprehensive')">🗺️ 综合攻略</button>
+                        <button class="type-btn" onclick="selectType('food')">🍜 美食合集</button>
+                        <button class="type-btn" onclick="selectType('accommodation')">🏨 住宿推荐</button>
+                        <button class="type-btn" onclick="selectType('tips')">⚠️ 避坑指南</button>
+                        <button class="type-btn" onclick="selectType('budget')">💰 费用汇总</button>
+                    </div>
+
+                    <div class="input-group">
+                        <label>标题风格</label>
+                        <select id="titleStyle">
+                            <option value="digital">数字型（如：5天4夜釜山超详细攻略）</option>
+                            <option value="contrast">对比型（如：比首尔更治愈！）</option>
+                            <option value="pain">痛点型（如：第一次去釜山看这篇就够了）</option>
+                            <option value="emotional">情感型（如：在釜山找到旅行的意义）</option>
+                        </select>
+                    </div>
+
+                    <button class="btn-primary" style="width: 100%;" onclick="generateNote()">✨ 生成小红书笔记</button>
+
+                    <div class="output-area" id="outputArea" style="display: none;">
+                        <div class="section-title">
+                            <span class="icon">📱</span>
+                            生成的小红书笔记
+                        </div>
+                        <div class="output-content" id="outputContent"></div>
+                        <button class="btn-primary copy-btn" onclick="copyOutput()">📋 复制到剪贴板</button>
+                    </div>
+                </div>
+
+                <!-- 常用Emoji -->
+                <div class="section">
+                    <div class="section-title">
+                        <span class="icon">😊</span>
+                        常用Emoji（点击添加到笔记末尾）
+                    </div>
+                    <div class="emoji-list">
+                        <span class="emoji-item" onclick="addEmoji('📍')">📍</span>
+                        <span class="emoji-item" onclick="addEmoji('⏰')">⏰</span>
+                        <span class="emoji-item" onclick="addEmoji('💰')">💰</span>
+                        <span class="emoji-item" onclick="addEmoji('🍜')">🍜</span>
+                        <span class="emoji-item" onclick="addEmoji('🏨')">🏨</span>
+                        <span class="emoji-item" onclick="addEmoji('✨')">✨</span>
+                        <span class="emoji-item" onclick="addEmoji('⭐')">⭐</span>
+                        <span class="emoji-item" onclick="addEmoji('🔥')">🔥</span>
+                        <span class="emoji-item" onclick="addEmoji('💡')">💡</span>
+                        <span class="emoji-item" onclick="addEmoji('📸')">📸</span>
+                        <span class="emoji-item" onclick="addEmoji('🚊')">🚊</span>
+                        <span class="emoji-item" onclick="addEmoji('⚠️')">⚠️</span>
+                        <span class="emoji-item" onclick="addEmoji('✅')">✅</span>
+                        <span class="emoji-item" onclick="addEmoji('💕')">💕</span>
+                    </div>
+                </div>
+
+                <!-- 话题标签 -->
+                <div class="section">
+                    <div class="section-title">
+                        <span class="icon">🏷️</span>
+                        话题标签（点击添加）
+                    </div>
+                    <div class="emoji-list">
+                        <span class="emoji-item" onclick="addTag('#旅行攻略')">旅行攻略</span>
+                        <span class="emoji-item" onclick="addTag('#旅行')">旅行</span>
+                        <span class="emoji-item" onclick="addTag('#旅行推荐')">旅行推荐</span>
+                        <span class="emoji-item" onclick="addTag('#小众旅行地')">小众旅行地</span>
+                        <span class="emoji-item" onclick="addTag('#美食')">美食</span>
+                        <span class="emoji-item" onclick="addTag('#美食探店')">美食探店</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局数据存储
+        let parsedData = {
+            trips: [],      // 旅行基本信息
+            schedule: [],   // 行程记录
+            expenses: [],   // 费用汇总
+            food: [],       // 美食记录
+            accommodation: [], // 住宿记录
+            tips: []        // 避坑提醒
+        };
+
+        let currentType = 'comprehensive';
+
+        // 切换标签页
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            document.querySelector(`.tab:nth-child(${tabName === 'input' ? '1' : '2'})`).classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
+
+        // 选择笔记类型
+        function selectType(type) {
+            currentType = type;
+            document.querySelectorAll('.type-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // 解析数据
+        function parseData() {
+            const input = document.getElementById('inputData').value.trim();
+            if (!input) {
+                alert('请先粘贴数据！');
+                return;
+            }
+
+            // 清空之前的数据
+            parsedData = {
+                trips: [],
+                schedule: [],
+                expenses: [],
+                food: [],
+                accommodation: [],
+                tips: []
+            };
+
+            // 按行分割
+            const lines = input.split('\n').filter(line => line.trim());
+
+            if (lines.length < 2) {
+                alert('数据格式不正确，请确保包含标题行和数据行');
+                return;
+            }
+
+            // 解析表头
+            const headers = lines[0].split(/\t|,|    /).map(h => h.trim());
+
+            // 解析数据行
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(/\t|,|    /).map(v => v.trim());
+                const row = {};
+
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
+
+                // 根据类型分类存储
+                if (row['类型'] === '美食') {
+                    parsedData.food.push(row);
+                    parsedData.schedule.push(row);
+                } else if (row['类型'] === '住宿') {
+                    parsedData.accommodation.push(row);
+                    parsedData.schedule.push(row);
+                } else if (row['类别']) {
+                    // 费用汇总表
+                    parsedData.expenses.push(row);
+                } else {
+                    parsedData.schedule.push(row);
+                }
+
+                // 提取避坑信息
+                if (row['避坑提醒']) {
+                    parsedData.tips.push({
+                        location: row['名称'] || row['项目'] || '',
+                        tip: row['避坑提醒']
+                    });
+                }
+            }
+
+            // 显示预览
+            showDataPreview();
+            alert(`成功解析 ${lines.length - 1} 条数据！`);
+        }
+
+        // 显示数据预览
+        function showDataPreview() {
+            const preview = document.getElementById('dataPreview');
+            const list = document.getElementById('parsedDataList');
+
+            preview.style.display = 'block';
+            list.innerHTML = '';
+
+            // 显示行程数据
+            parsedData.schedule.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'data-row';
+                div.innerHTML = `
+                    <div class="data-cell">${item['日期'] || ''}</div>
+                    <div class="data-cell">${item['类型'] || ''}</div>
+                    <div class="data-cell">${item['名称'] || ''}</div>
+                    <div class="data-cell">${item['推荐指数'] || ''}</div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        // 加载示例数据
+        function loadSample() {
+            document.getElementById('inputData').value = `日期	城市	时间段	类型	名称	费用	推荐指数	必去吗	我的感受	避坑提醒
+5月1日	釜山	上午	景点	海云台海滩	0	⭐⭐⭐⭐⭐	必去	沙子很细，日落超美	周末人多，早点去
+5月1日	釜山	中午	美食	海鲜拉面	60	⭐⭐⭐⭐	推荐	汤头鲜甜，分量大	需要排队30分钟
+5月1日	釜山	下午	景点	甘川文化村	0	⭐⭐⭐⭐	必去	色彩斑斓，像童话世界	需要爬山，穿舒服鞋子
+5月1日	釜山	晚上	美食	烤肉店	150	⭐⭐⭐⭐⭐	必去	肉质新鲜，价格合理	需要提前预约
+5月2日	釜山	上午	景点	梵鱼寺	0	⭐⭐⭐	推荐	环境清幽，适合散步	山路较多
+5月2日	釜山	中午	美食	猪脚汤	50	⭐⭐⭐⭐	推荐	本地人也爱来	关门较早，注意时间`;
+            document.getElementById('tripName').value = '韩国釜山5日游';
+            document.getElementById('destination').value = '釜山';
+            document.getElementById('tripDays').value = '5';
+            document.getElementById('totalCost').value = '8000';
+            document.getElementById('departure').value = '上海';
+            document.getElementById('tripType').value = '独行';
+        }
+
+        // 清空数据
+        function clearData() {
+            document.getElementById('inputData').value = '';
+            document.getElementById('tripName').value = '';
+            document.getElementById('destination').value = '';
+            document.getElementById('tripDays').value = '';
+            document.getElementById('totalCost').value = '';
+            document.getElementById('departure').value = '';
+            document.getElementById('dataPreview').style.display = 'none';
+            parsedData = {
+                trips: [],
+                schedule: [],
+                expenses: [],
+                food: [],
+                accommodation: [],
+                tips: []
+            };
+        }
+
+        // 生成标题
+        function generateTitle() {
+            const destination = document.getElementById('destination').value || '目的地';
+            const days = document.getElementById('tripDays').value || 'X';
+            const style = document.getElementById('titleStyle').value;
+
+            const titles = {
+                digital: `${days}天${parseInt(days)-1}夜${destination}超详细攻略｜人均${document.getElementById('totalCost').value/parseInt(days)}✅不踩雷`,
+                contrast: `比想象中更美！${destination}这${Math.min(parsedData.schedule.length, 7)}个地方美到不想走...`,
+                pain: `第一次去${destination}看这篇就够了！超详细懒人包📝`,
+                emotional: `在${destination}的${days}天，我终于找到了旅行的意义...`
+            };
+
+            return titles[style] || titles.digital;
+        }
+
+        // 生成笔记
+        function generateNote() {
+            if (parsedData.schedule.length === 0) {
+                alert('请先解析数据！');
+                return;
+            }
+
+            const destination = document.getElementById('destination').value || '目的地';
+            const days = document.getElementById('tripDays').value || 'X';
+            const totalCost = document.getElementById('totalCost').value || '0';
+            const departure = document.getElementById('departure').value || '';
+            const tripType = document.getElementById('tripType').value;
+
+            let content = '';
+            const title = generateTitle();
+
+            switch(currentType) {
+                case 'comprehensive':
+                    content = generateComprehensive(destination, days, totalCost, departure, tripType);
+                    break;
+                case 'food':
+                    content = generateFood(destination);
+                    break;
+                case 'accommodation':
+                    content = generateAccommodation(destination);
+                    break;
+                case 'tips':
+                    content = generateTips(destination);
+                    break;
+                case 'budget':
+                    content = generateBudget(destination, days, totalCost);
+                    break;
+            }
+
+            // 添加标题和话题标签
+            const fullContent = `📌 ${title}\n\n${content}\n\n👇 评论区见！有问题随时问我~\n\n#${destination}旅行 #${destination}攻略 #旅行攻略 #旅行`;
+
+            document.getElementById('outputContent').textContent = fullContent;
+            document.getElementById('outputArea').style.display = 'block';
+        }
+
+        // 生成综合攻略
+        function generateComprehensive(destination, days, totalCost, departure, tripType) {
+            let content = '';
+
+            // 头部信息
+            content += `📍 ${destination} | ⏰ ${days}天${parseInt(days)-1}夜 | 💰 人均${Math.round(totalCost/parseInt(days))}元\n`;
+            content += `👥 适合：${tripType === '独行' ? '独行侠' : tripType + '游'}\n\n`;
+            content += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+            // 行程总览
+            content += `📌 行程总览\n`;
+            const uniqueDates = [...new Set(parsedData.schedule.map(s => s['日期']))];
+            uniqueDates.forEach((date, index) => {
+                const dayItems = parsedData.schedule.filter(s => s['日期'] === date);
+                const locations = dayItems.map(i => i['名称']).filter(n => n).slice(0, 3).join(' → ');
+                content += `Day${index + 1}: ${locations || date}\n`;
+            });
+            content += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+            // 详细攻略
+            content += `🗺️ 详细攻略\n\n`;
+
+            uniqueDates.forEach((date, index) => {
+                const dayItems = parsedData.schedule.filter(s => s['日期'] === date);
+                content += `🔸 Day${index + 1}: ${date}\n\n`;
+
+                dayItems.forEach(item => {
+                    const type = item['类型'] || '';
+                    const name = item['名称'] || '';
+                    const cost = item['费用'] || '0';
+                    const rating = item['推荐指数'] || '';
+                    const feeling = item['我的感受'] || '';
+                    const tips = item['拍照Tips'] || '';
+                    const warn = item['避坑提醒'] || '';
+
+                    if (type === '美食') {
+                        content += `🍜 ${name}\n`;
+                        content += `⭐ ${rating} | 💰 人均${cost}元\n`;
+                        if (feeling) content += `💬 ${feeling}\n`;
+                    } else if (type === '住宿') {
+                        content += `🏨 ${name}\n`;
+                        content += `💰 ${cost}元/晚\n`;
+                        if (feeling) content += `💬 ${feeling}\n`;
+                    } else {
+                        content += `📍 ${name}\n`;
+                        if (rating) content += `⭐ ${rating}\n`;
+                        if (cost && cost !== '0') content += `💰 门票：${cost}元\n`;
+                        if (feeling) content += `💬 ${feeling}\n`;
+                        if (tips) content += `📸 ${tips}\n`;
+                    }
+
+                    if (warn) content += `⚠️ ${warn}\n`;
+                    content += `\n`;
+                });
+            });
+
+            // 避坑Tips
+            if (parsedData.tips.length > 0) {
+                content += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+                content += `⚠️ 避坑Tips\n`;
+                parsedData.tips.forEach(tip => {
+                    content += `⚠️ ${tip.location}：${tip.tip}\n`;
+                });
+            }
+
+            return content;
+        }
+
+        // 生成美食合集
+        function generateFood(destination) {
+            let content = `🍜 ${destination}必吃美食清单\n\n`;
+            content += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+            if (parsedData.food.length === 0) {
+                content += `暂无美食数据，请确保输入数据中包含"类型=美食"的项目\n`;
+                return content;
+            }
+
+            parsedData.food.forEach((item, index) => {
+                content += `🔹 ${index + 1}. ${item['名称'] || '未命名'}\n`;
+                content += `⭐ ${item['推荐指数'] || ''} | 💰 人均${item['费用'] || '?'}元\n`;
+                if (item['我的感受']) content += `💬 ${item['我的感受']}\n`;
+                if (item['避坑提醒']) content += `⚠️ ${item['避坑提醒']}\n`;
+                content += `\n`;
+            });
+
+            return content;
+        }
+
+        // 生成住宿推荐
+        function generateAccommodation(destination) {
+            let content = `🏨 ${destination}住宿推荐\n\n`;
+            content += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+            if (parsedData.accommodation.length === 0) {
+                content += `暂无住宿数据，请确保输入数据中包含"类型=住宿"的项目\n`;
+                return content;
+            }
+
+            parsedData.accommodation.forEach((item, index) => {
+                content += `🔹 住宿${index + 1}: ${item['名称'] || '未命名'}\n`;
+                content += `💰 ${item['费用'] || '?'}元/晚\n`;
+                if (item['地址']) content += `📍 ${item['地址']}\n`;
+                if (item['我的感受']) content += `💬 ${item['我的感受']}\n`;
+                content += `\n`;
+            });
+
+            return content;
+        }
+
+        // 生成避坑指南
+        function generateTips(destination) {
+            let content = `⚠️ ${destination}旅行避坑指南\n\n`;
+            content += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+            if (parsedData.tips.length === 0) {
+                content += `暂无避坑数据，请确保输入数据中包含"避坑提醒"字段的内容\n`;
+                return content;
+            }
+
+            parsedData.tips.forEach((tip, index) => {
+                content += `🚫 坑点${index + 1}: ${tip.location || '注意'}\n`;
+                content += `💡 ${tip.tip}\n\n`;
+            });
+
+            return content;
+        }
+
+        // 生成费用汇总
+        function generateBudget(destination, days, totalCost) {
+            let content = `💰 ${destination}${days}天费用透明公开\n\n`;
+            content += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+            content += `💵 总花费：${totalCost}元\n`;
+            content += `📊 人均：${Math.round(totalCost/parseInt(days))}元/天\n\n`;
+
+            // 按类别统计
+            const categories = {};
+            parsedData.schedule.forEach(item => {
+                const cost = parseInt(item['费用']) || 0;
+                if (cost > 0) {
+                    const type = item['类型'] || '其他';
+                    categories[type] = (categories[type] || 0) + cost;
+                }
+            });
+
+            content += `📊 费用明细\n`;
+            Object.entries(categories).forEach(([cat, cost]) => {
+                const icons = { '美食': '🍜', '住宿': '🏨', '交通': '🚊', '景点': '🎫' };
+                content += `${icons[cat] || '📌'} ${cat}：${cost}元\n`;
+            });
+
+            return content;
+        }
+
+        // 复制到剪贴板
+        function copyOutput() {
+            const content = document.getElementById('outputContent').textContent;
+            navigator.clipboard.writeText(content).then(() => {
+                alert('已复制到剪贴板！可以直接粘贴到小红书发布~');
+            }).catch(() => {
+                // 后备方案
+                const textarea = document.createElement('textarea');
+                textarea.value = content;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('已复制到剪贴板！');
+            });
+        }
+
+        // 添加Emoji
+        function addEmoji(emoji) {
+            const output = document.getElementById('outputContent');
+            if (output.textContent) {
+                output.textContent += emoji;
+            }
+        }
+
+        // 添加标签
+        function addTag(tag) {
+            const output = document.getElementById('outputContent');
+            if (output.textContent) {
+                output.textContent += ` ${tag}`;
+            }
+        }
+    </script>
+</body>
+</html>
